@@ -25,7 +25,7 @@ module LazyHighCharts
     end
 
     def high_graph_stock(placeholder, object, &block)
-      build_html_output("StockChart", placeholder, object, &block)
+      build_html_output("stockChart", placeholder, object, &block)
     end
 
     private
