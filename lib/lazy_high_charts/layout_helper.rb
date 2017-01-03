@@ -21,11 +21,11 @@ module LazyHighCharts
     end
 
     def high_graph(placeholder, object, &block)
-      build_html_output("Chart", placeholder, object, &block)
+      build_html_output("chart", placeholder, object, &block)
     end
 
     def high_graph_stock(placeholder, object, &block)
-      build_html_output("StockChart", placeholder, object, &block)
+      build_html_output("stockChart", placeholder, object, &block)
     end
 
     private
@@ -34,10 +34,10 @@ module LazyHighCharts
       core_js =<<-EOJS
         var options = #{options_collection_as_string(object)};
         #{capture(&block) if block_given?}
-        window.chart_#{placeholder.underscore} = new Highcharts.#{type}(options);
+        HighCharts.#{type}('#{placeholder}', options);
       EOJS
 
-      encapsulate_js core_js
+      # encapsulate_js core_js
     end
 
     def build_globals_html_output(object)
