@@ -7,13 +7,13 @@ module LazyHighCharts
     def high_chart(placeholder, object, &block)
       object.html_options.merge!({:id => placeholder})
       object.options[:chart][:renderTo] = placeholder
-      high_graph(placeholder, object, &block).concat(content_tag("div", "", object.html_options))
+      content_tag("div", "", object.html_options).concat(high_graph(placeholder, object, &block))
     end
 
     def high_stock(placeholder, object, &block)
       object.html_options.merge!({:id => placeholder})
       object.options[:chart][:renderTo] = placeholder
-      high_graph_stock(placeholder, object, &block).concat(content_tag("div", "", object.html_options))
+      content_tag("div", "", object.html_options).concat( high_graph_stock(placeholder, object, &block))
     end
 
     def high_chart_globals(object)
@@ -34,10 +34,10 @@ module LazyHighCharts
       core_js =<<-EOJS
         var options = #{options_collection_as_string(object)};
         #{capture(&block) if block_given?}
-        HighCharts.#{type}('#{placeholder}', options);
+        Highcharts.#{type}('#{placeholder}', options);
       EOJS
 
-      # encapsulate_js core_js
+      encapsulate_js core_js
     end
 
     def build_globals_html_output(object)
@@ -92,39 +92,39 @@ module LazyHighCharts
     end
 
     def encapsulate_js(core_js)
-      if request_is_xhr?
+      # if request_is_xhr?
         js_output = "#{js_start} #{core_js} #{js_end}"
       # Turbolinks.version < 5
-      elsif defined?(Turbolinks) && request_is_referrer?
-        js_output =<<-EOJS
-        #{js_start}
-          var f = function(){
-            document.removeEventListener('page:load', f, true);
-            #{core_js}
-          };
-          document.addEventListener('page:load', f, true);
-        #{js_end}
-        EOJS
-      # Turbolinks >= 5
-      elsif defined?(Turbolinks) && request_turbolinks_5_tureferrer?
-        js_output =<<-EOJS
-        #{js_start}
-          document.addEventListener("turbolinks:load", function() {
-            #{core_js}
-          });
-        #{js_end}
-        EOJS
-      else
-        js_output =<<-EOJS
-        #{js_start}
-          var onload = window.onload;
-          window.onload = function(){
-            if (typeof onload == "function") onload();
-            #{core_js}
-          };
-        #{js_end}
-        EOJS
-      end
+      # elsif defined?(Turbolinks) && request_is_referrer?
+      #   js_output =<<-EOJS
+      #   #{js_start}
+      #     var f = function(){
+      #       document.removeEventListener('page:load', f, true);
+      #       #{core_js}
+      #     };
+      #     document.addEventListener('page:load', f, true);
+      #   #{js_end}
+      #   EOJS
+      # # Turbolinks >= 5
+      # elsif defined?(Turbolinks) && request_turbolinks_5_tureferrer?
+      #   js_output =<<-EOJS
+      #   #{js_start}
+      #     document.addEventListener("turbolinks:load", function() {
+      #       #{core_js}
+      #     });
+      #   #{js_end}
+      #   EOJS
+      # else
+      #   js_output =<<-EOJS
+      #   #{js_start}
+      #     var onload = window.onload;
+      #     window.onload = function(){
+      #       if (typeof onload == "function") onload();
+      #       #{core_js}
+      #     };
+      #   #{js_end}
+      #   EOJS
+      # end
 
       if defined?(raw)
         return raw(js_output)
